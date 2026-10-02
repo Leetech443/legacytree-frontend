@@ -1,0 +1,8 @@
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.inp{width:100%;padding:.65rem .75rem;border:1px solid #cbd5e1;border-radius:.6rem;font-size:.85rem;background:#fff}
+.inp:focus{outline:2px solid #16a34a;border-color:#16a34a}
+.lbl{display:block;font-size:.75rem;font-weight:600;color:#334155;margin-bottom:.3rem}
+.opt{font-weight:400;color:#64748b}.err{color:#dc2626;font-size:.72rem;margin-top:.2rem}
+.btn{padding:.65rem 1rem;border-radius:.65rem;font-weight:700;font-size:.8rem}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;padding:1.25rem}
+th.sortable{cursor:pointer;user-select:none}
