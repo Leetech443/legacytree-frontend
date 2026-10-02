@@ -32,6 +32,9 @@ export const registerMember = (payload) => request('/register', { method: 'POST'
 /** Lets a person change their answer later using the token returned by registerMember. */
 export const updateRsvp = (token, rsvp) => request(`/rsvp/${token}`, { method: 'PUT', body: rsvp });
 
+/** Family tree data (admin-only unless the server has TREE_PUBLIC=true). */
+export const getTree = () => request('/tree');
+
 /* ---- Admin ---- */
 export const adminApi = {
   login: (username, password) => request('/admin/login', { method: 'POST', body: { username, password } }),

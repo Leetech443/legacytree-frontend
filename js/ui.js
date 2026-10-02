@@ -12,7 +12,7 @@ export function toast(msg, bad) {
   clearTimeout(t._h); t._h = setTimeout(() => (t.hidden = true), 4000);
 }
 
-const LINKS = [['children', 'Children'], ['grandchildren', 'Grandchildren'], ['great-grandchildren', 'Great-grandchildren']];
+const LINKS = [['children', 'Children'], ['grandchildren', 'Grandchildren'], ['great-grandchildren', 'Great-grandchildren'], ['tree', 'Family tree']];
 export function renderHeader(active) {
   $('#header').innerHTML = `<header class="bg-slate-900 text-white sticky top-0 z-40"><div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
     <a href="index.html" class="font-extrabold tracking-tight whitespace-nowrap">🌳 LegacyTree</a>
