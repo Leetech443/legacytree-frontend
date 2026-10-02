@@ -63,11 +63,13 @@ function rsvpBlock() {
       ${F('companions_count', 'Number of people attending with you', { type: 'number', req: false, hint: 'enter 0 if coming alone', attrs: 'min="0" max="50" value="0"' })}
       <div class="grid sm:grid-cols-2 gap-4">
         ${F('arrival_date', 'Expected Arrival Date', { type: 'date', attrs: `min="${today()}"` })}
+        ${F('arrival_time', 'Expected Arrival Time', { type: 'time' })}
         ${F('departure_date', 'Expected Departure Date', { type: 'date', attrs: `min="${today()}"` })}
         ${S('travel_method', 'How will you travel?', travel, { ph: 'Select Travel Method' })}
         ${S('needs_accommodation', 'Will you require accommodation?', [['true', 'Yes'], ['false', 'No']])}
       </div>
       ${T('dietary_notes', 'Any dietary requirements / allergies?')}
+      ${T('special_assistance', 'Any special assistance required?')}
       ${T('additional_info', 'Additional Information or Requests')}
     </div>
     <div data-panel="MAYBE" class="hidden p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-2">
