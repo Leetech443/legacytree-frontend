@@ -18,7 +18,7 @@ export function renderHeader(active) {
     <a href="index.html" class="font-extrabold tracking-tight whitespace-nowrap">🌳 LegacyTree</a>
     <nav class="flex items-center gap-1 text-xs font-semibold overflow-x-auto">
       ${LINKS.map(([k, l]) => `<a href="${k}.html" class="px-3 py-1.5 rounded-lg whitespace-nowrap ${active === k ? 'bg-green-600' : 'text-slate-300 hover:text-white'}">${l}</a>`).join('')}
-      <a href="admin.html" class="ml-2 px-3 py-1.5 rounded-lg border whitespace-nowrap ${active === 'admin' ? 'bg-white text-slate-900 border-white' : 'border-white/30 hover:bg-white/10'}">Admin</a>
+      ${active === 'admin' ? '' : '<a href="admin.html" class="ml-2 px-3 py-1.5 rounded-lg border border-white/30 hover:bg-white/10 whitespace-nowrap">Admin</a>'}
     </nav></div></header>`;
 }
 
