@@ -6,7 +6,7 @@ import { buildTree, walk, search, countByGeneration } from './treeModel.js';
 renderHeader('tree');
 const app = $('#app');
 const STYLE = {
-  ROOT: ['Patriarch', 'bg-slate-900 text-white border-slate-900'],
+  ROOT: ['Father - (Family)', 'bg-slate-900 text-white border-slate-900'],
   PARENT: ['Mother', 'bg-green-50 text-green-900 border-green-400'],
   CHILD: ['Child', 'bg-emerald-50 text-emerald-900 border-emerald-400'],
   GRANDCHILD: ['Grandchild', 'bg-teal-50 text-teal-900 border-teal-400'],
