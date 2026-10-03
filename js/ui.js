@@ -35,20 +35,20 @@ export const SIDE = S('lineage_side', 'Lineage side', [['Maternal', "Mother's si
 
 /* ---- RSVP block shared by every form ---- */
 export function rsvpBlock(options) {
-  const travel = options.travel_methods.map((t) => [t.code, t.label]);
   const reasons = options.decline_reasons.map((t) => [t.code, t.label]);
   return `<div class="border-t border-slate-200 pt-5 space-y-4">
     ${S('status', 'Will you attend?', [['YES', 'Yes, I will attend'], ['MAYBE', "I'm not sure yet"], ['NO', "No, I can't make it"]], { ph: 'Select answer' })}
     <div data-panel="YES" class="hidden space-y-4">
-      ${F('companions_count', 'Number of people attending with you', { type: 'number', req: false, hint: 'enter 0 if coming alone', attrs: 'min="0" max="50" value="0"' })}
-      <div class="grid sm:grid-cols-2 gap-4">
-        ${F('arrival_date', 'Expected Arrival Date', { type: 'date', attrs: `min="${today()}"` })}
-        ${F('arrival_time', 'Expected Arrival Time', { type: 'time' })}
-        ${F('departure_date', 'Expected Departure Date', { type: 'date', attrs: `min="${today()}"` })}
-        ${S('travel_method', 'How will you travel?', travel, { ph: 'Select Travel Method' })}
-        ${S('needs_accommodation', 'Will you require accommodation?', [['true', 'Yes'], ['false', 'No']])}
+      <div class="p-4 rounded-xl bg-violet-50 border border-violet-200 text-xs text-violet-900 space-y-1.5">
+        <b class="block text-sm">Bringing someone with you?</b>
+        <p>This is <b>only for family friends</b>, meaning people who are <b>not</b> part of the family.</p>
+        <p>If the person is a family member, please ask them to RSVP on their own form instead:
+          <a href="children.html" target="_blank" class="underline font-semibold">Children</a> ·
+          <a href="grandchildren.html" target="_blank" class="underline font-semibold">Grandchildren</a> ·
+          <a href="great-grandchildren.html" target="_blank" class="underline font-semibold">Great-grandchildren</a></p>
       </div>
-      <div><label class="lbl">Additional Information or Requests <span class="opt">(Optional)</span></label><textarea class="inp" rows="3" name="additional_info" maxlength="2000"></textarea></div>
+      ${F('friends_count', 'Number of family friends coming with you', { type: 'number', req: false, hint: 'enter 0 if none', attrs: 'min="0" max="50" value="0"' })}
+      ${F('arrival_date', 'Expected Arrival Date', { type: 'date', attrs: `min="${today()}"` })}
     </div>
     <div data-panel="MAYBE" class="hidden p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-2">
       <p class="text-sm text-amber-900">No problem. On which day should we ask you again?</p>
@@ -62,7 +62,7 @@ export function rsvpBlock(options) {
   </div>`;
 }
 
-const NEEDED = { YES: ['arrival_date', 'arrival_time', 'departure_date', 'travel_method', 'needs_accommodation'], MAYBE: ['followup_date'], NO: ['reason_code'] };
+const NEEDED = { YES: ['arrival_date'], MAYBE: ['followup_date'], NO: ['reason_code'] };
 export function bindRsvp(form) {
   const sync = () => {
     const v = form.status.value;
@@ -80,10 +80,30 @@ export function bindRsvp(form) {
 }
 
 export function readRsvp(form) {
-  const v = Object.fromEntries(new FormData(form)), bool = (x) => x === 'true';
-  if (v.status === 'YES') return { status: 'YES', attendance: {
-    companions_count: v.companions_count || 0, arrival_date: v.arrival_date, arrival_time: v.arrival_time, departure_date: v.departure_date,
-    travel_method: v.travel_method, needs_accommodation: bool(v.needs_accommodation), additional_info: v.additional_info } };
+  const v = Object.fromEntries(new FormData(form));
+  if (v.status === 'YES') return { status: 'YES', attendance: { friends_count: v.friends_count || 0, arrival_date: v.arrival_date } };
   if (v.status === 'MAYBE') return { status: 'MAYBE', followup_date: v.followup_date };
   return { status: 'NO', decline: { reason_code: v.reason_code, reason_text: v.reason_text } };
+}
+
+/* ---- Occupation + marital status + spouse (children & grandchildren) ---- */
+export const PROFILE = () => `<div class="grid sm:grid-cols-2 gap-4">
+    ${F('occupation', 'Occupation', { attrs: 'maxlength="120" placeholder="e.g. Teacher, Farmer, Student"' })}
+    ${S('marital_status', 'Marital status', [['Single', 'Single'], ['Married', 'Married'], ['Divorced', 'Divorced'], ['Widowed', 'Widowed']])}
+    <div id="spouseWrap" class="hidden sm:col-span-2"><label class="lbl" id="spouseLbl">Spouse's name *</label>
+      <input class="inp" name="spouse_name" maxlength="200" disabled /></div></div>`;
+
+/** Shows the spouse field only when Married, labelled Wife / Husband from the person's gender. */
+export function bindProfile(form) {
+  const sync = () => {
+    const married = form.marital_status.value === 'Married', g = form.gender.value;
+    const who = g === 'Male' ? 'Wife' : g === 'Female' ? 'Husband' : 'Spouse';
+    $('#spouseLbl').textContent = `${who}'s name *`;
+    form.spouse_name.placeholder = `${who}'s full name`;
+    $('#spouseWrap').classList.toggle('hidden', !married);
+    form.spouse_name.disabled = !married; form.spouse_name.required = married;
+  };
+  form.marital_status.addEventListener('change', sync);
+  form.gender.addEventListener('change', sync);
+  sync();
 }

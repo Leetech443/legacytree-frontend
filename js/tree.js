@@ -23,6 +23,7 @@ function nodeHtml(n) {
   const open = !collapsed.has(n.id);
   return `<li><div class="tnode ${cls} ${hits.has(n.id) ? 'hit' : ''}" data-node="${n.id}">
       <b>${dot}${esc(n.name)}</b><span class="tg">${label}${n.generation !== 'ROOT' && n.lineage_side ? ' · ' + n.lineage_side : ''}</span>
+      ${n.friends > 0 ? `<span class="tg" style="color:#6d28d9;font-weight:700;opacity:1">🤝 +${n.friends} friend${n.friends > 1 ? 's' : ''}</span>` : ''}
       ${kids ? `<button class="ttoggle" data-toggle="${n.id}" title="${open ? 'Collapse' : 'Expand'}">${open ? '−' : '+ ' + n.total}</button>` : ''}</div>
     ${kids && open ? `<ul>${n.children.map(nodeHtml).join('')}</ul>` : ''}</li>`;
 }
@@ -58,6 +59,7 @@ async function init() {
         <button id="exp" class="btn bg-white border border-slate-300">Expand all</button><button id="col" class="btn bg-white border border-slate-300">Collapse all</button>
         <button id="zo" class="btn bg-white border border-slate-300" title="Zoom out">A−</button><button id="zi" class="btn bg-white border border-slate-300" title="Zoom in">A+</button></div></div>
     <div class="flex flex-wrap gap-3 text-[11px] text-slate-600">${Object.entries(STYLE).map(([k, [l, cls]]) => `<span><i class="inline-block w-3 h-3 rounded border ${cls}"></i> ${l}</span>`).join('')}
+      ${isAdmin ? '<span><b style="color:#6d28d9">🤝 +n</b> family friends coming</span>' : ''}
       ${isAdmin ? Object.values(DOT).map(([bg, l]) => `<span><i class="inline-block w-2 h-2 rounded-full ${bg}"></i> ${l}</span>`).join('') : ''}</div>
     <div class="tree-wrap"><div class="tree" id="tree"></div></div></div>`;
 

@@ -1,6 +1,6 @@
 // Generic page shell used by each form file: renders, loads parents, validates, saves.
 import { getOptions, getParents, registerMember } from './api.js';
-import { $, esc, renderHeader, rsvpBlock, bindRsvp, readRsvp, toast } from './ui.js';
+import { $, esc, renderHeader, rsvpBlock, bindRsvp, readRsvp, bindProfile, toast } from './ui.js';
 
 const THANKS = {
   YES: 'Your attendance details are saved. We look forward to seeing you.',
@@ -21,7 +21,8 @@ function buildPayload(cfg, form) {
   return {
     member: { generation: cfg.generation, full_name: v.full_name, gender: v.gender, parent_id: v.parent_id,
       lineage_side: v.lineage_side || undefined, has_children: v.has_children === 'true', email: v.email || '', phone: v.phone,
-      age: v.age || undefined, school: v.school, guardian_name: v.guardian_name, guardian_phone: v.guardian_phone },
+      age: v.age || undefined, occupation: v.occupation, marital_status: v.marital_status || undefined,
+      spouse_name: v.spouse_name, guardian_name: v.guardian_name, guardian_phone: v.guardian_phone },
     rsvp: readRsvp(form),
     consent: form.consent.checked,
   };
@@ -44,6 +45,7 @@ export async function mountForm(cfg) {
 
   const form = $('#f');
   bindRsvp(form);
+  if (form.marital_status) bindProfile(form);
   const reload = () => loadParents(cfg, form).catch((e) => toast(e.message, true));
   reload();
   (cfg.watch || []).forEach((n) => form[n].addEventListener('change', reload));
