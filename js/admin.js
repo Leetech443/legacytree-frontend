@@ -1,4 +1,4 @@
-// Admin portal: Overview, Guests, Follow-ups, Family mothers (root parents).
+// Admin portal: Overview, Members, Follow-ups, Family mothers (root parents).
 import { adminApi, auth } from './api.js';
 import { $, $$, esc, toast, renderHeader, F } from './ui.js';
 
@@ -6,7 +6,7 @@ renderHeader('admin');
 const app = $('#app');
 const GEN = { CHILD: 'Child', GRANDCHILD: 'Grandchild', GREAT_GRANDCHILD: 'Great-grandchild' };
 const COLORS = { YES: 'bg-green-500', MAYBE: 'bg-amber-400', NO: 'bg-red-400' };
-const TABS = [['overview', 'Overview'], ['guests', 'Guests'], ['followups', 'Follow-ups'], ['parents', 'Family mothers']];
+const TABS = [['overview', 'Overview'], ['Members', 'Members'], ['followups', 'Follow-ups'], ['parents', 'Family mothers']];
 const d10 = (s) => (s ? String(s).slice(0, 10) : '—');
 const badge = (s) => `<span class="px-2 py-0.5 rounded-full text-[11px] font-bold ${{ YES: 'bg-green-100 text-green-700', NO: 'bg-red-100 text-red-700', MAYBE: 'bg-amber-100 text-amber-700' }[s] || 'bg-slate-100 text-slate-500'}">${s || 'NONE'}</span>`;
 const stat = (label, value, sub = '', color = 'text-slate-900') => `<div class="card"><div class="text-xs text-slate-500">${label}</div><div class="text-3xl font-extrabold ${color}">${value}</div><div class="text-[11px] text-slate-400">${sub}</div></div>`;
