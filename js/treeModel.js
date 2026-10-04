@@ -22,7 +22,7 @@ export function search(root, q) {
   const matches = new Set(), ancestors = new Set(), needle = q.trim().toLowerCase();
   if (!needle) return { matches, ancestors };
   const visit = (n, trail) => {
-    if (n.id !== 'root' && n.name.toLowerCase().includes(needle)) { matches.add(n.id); trail.forEach((t) => ancestors.add(t)); }
+    if (n.id !== 'root' && [n.name, n.spouse_name].some((v) => (v || '').toLowerCase().includes(needle))) { matches.add(n.id); trail.forEach((t) => ancestors.add(t)); }
     n.children.forEach((c) => visit(c, [...trail, n.id]));
   };
   visit(root, []);
