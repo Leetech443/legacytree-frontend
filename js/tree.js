@@ -21,12 +21,12 @@ function nodeHtml(n) {
   const dot = n.status && DOT[n.status] ? `<i class="inline-block w-2 h-2 rounded-full ${DOT[n.status][0]} mr-1" title="${DOT[n.status][1]}"></i>` : '';
   const kids = n.children.length;
   const open = !collapsed.has(n.id);
-  // Spouse (only for people who are married): Male -> Wife, Female -> Husband
-  const spouse = n.spouse_name ? `<span class="tjoin" title="Married">♥</span>
-      <div class="tnode spouse"><b>${esc(n.spouse_name)}</b><span class="tg">${n.gender === 'Male' ? 'Wife' : n.gender === 'Female' ? 'Husband' : 'Spouse'} of ${esc(n.name.split(' ')[0])}</span></div>` : '';
-  return `<li><div class="couple ${hits.has(n.id) ? 'hit' : ''}"><div class="tnode ${cls}" data-node="${n.id}">
-      <b>${dot}${esc(n.name)}</b><span class="tg">${label}${n.generation !== 'ROOT' && n.lineage_side ? ' · ' + n.lineage_side : ''}</span>
-      ${kids ? `<button class="ttoggle" data-toggle="${n.id}" title="${open ? 'Collapse' : 'Expand'}">${open ? '−' : '+ ' + n.total}</button>` : ''}</div>${spouse}</div>
+  const toggle = kids ? `<button class="ttoggle" data-toggle="${n.id}" title="${open ? 'Collapse' : 'Expand'}">${open ? '−' : '+ ' + n.total}</button>` : '';
+  // Spouse lives INSIDE the same bubble (only for people who are married): Male -> Wife, Female -> Husband.
+  // The expand/collapse button goes last, so person + spouse read as one unit.
+  const spouse = n.spouse_name ? `<div class="tsp"><div><span class="th">♥</span> <b>${esc(n.spouse_name)}</b></div><span class="tg">${n.gender === 'Male' ? 'Wife' : n.gender === 'Female' ? 'Husband' : 'Spouse'}</span>${toggle}</div>` : '';
+  return `<li><div class="tnode ${cls} ${hits.has(n.id) ? 'hit' : ''}" data-node="${n.id}">
+      <div class="tp"><b>${dot}${esc(n.name)}</b><span class="tg">${label}${n.generation !== 'ROOT' && n.lineage_side ? ' · ' + n.lineage_side : ''}</span>${n.spouse_name ? '' : toggle}</div>${spouse}</div>
     ${kids && open ? `<ul>${n.children.map(nodeHtml).join('')}</ul>` : ''}</li>`;
 }
 
@@ -55,12 +55,12 @@ async function init() {
 
   app.innerHTML = `<div class="space-y-4">
     <div class="flex flex-wrap items-end justify-between gap-3"><div><h1 class="text-2xl font-extrabold">Family tree</h1>
-      <p class="text-xs text-slate-500">${c.PARENT} mothers · ${c.CHILD} children · ${c.GRANDCHILD} grandchildren · ${c.GREAT_GRANDCHILD} great-grandchildren. Spouses are shown beside the person they are married to. Click − / + on a person to collapse or expand their branch.</p></div>
+      <p class="text-xs text-slate-500">${c.PARENT} mothers · ${c.CHILD} children · ${c.GRANDCHILD} grandchildren · ${c.GREAT_GRANDCHILD} great-grandchildren. A spouse appears inside the same card as the person they are married to. Click − / + on a person to collapse or expand their branch.</p></div>
       <div class="flex flex-wrap gap-2 items-center">
         <input id="q" class="inp w-52" placeholder="Find a person…">
         <button id="exp" class="btn bg-white border border-slate-300">Expand all</button><button id="col" class="btn bg-white border border-slate-300">Collapse all</button>
         <button id="zo" class="btn bg-white border border-slate-300" title="Zoom out">A−</button><button id="zi" class="btn bg-white border border-slate-300" title="Zoom in">A+</button></div></div>
-    <div class="flex flex-wrap gap-3 text-[11px] text-slate-600"><span><i class="inline-block w-3 h-3 rounded border border-dashed border-slate-400"></i> Spouse ♥</span>${Object.entries(STYLE).map(([k, [l, cls]]) => `<span><i class="inline-block w-3 h-3 rounded border ${cls}"></i> ${l}</span>`).join('')}
+    <div class="flex flex-wrap gap-3 text-[11px] text-slate-600"><span><b class="text-rose-600">♥</b> Spouse (shown inside the card)</span>${Object.entries(STYLE).map(([k, [l, cls]]) => `<span><i class="inline-block w-3 h-3 rounded border ${cls}"></i> ${l}</span>`).join('')}
       ${isAdmin ? Object.values(DOT).map(([bg, l]) => `<span><i class="inline-block w-2 h-2 rounded-full ${bg}"></i> ${l}</span>`).join('') : ''}</div>
     <div class="tree-wrap"><div class="tree" id="tree"></div></div></div>`;
 
@@ -71,7 +71,7 @@ async function init() {
   $('#q').oninput = (e) => {
     const r = search(root, e.target.value);
     hits = r.matches; r.ancestors.forEach((id) => collapsed.delete(id)); draw();
-    document.querySelector('.couple.hit')?.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
+    document.querySelector('.tnode.hit')?.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' });
   };
   draw();
 }
