@@ -39,15 +39,6 @@ export function rsvpBlock(options) {
   return `<div class="border-t border-slate-200 pt-5 space-y-4">
     ${S('status', 'Will you attend?', [['YES', 'Yes, I will attend'], ['MAYBE', "I'm not sure yet"], ['NO', "No, I can't make it"]], { ph: 'Select answer' })}
     <div data-panel="YES" class="hidden space-y-4">
-      <div class="p-4 rounded-xl bg-violet-50 border border-violet-200 text-xs text-violet-900 space-y-1.5">
-        <b class="block text-sm">Bringing someone with you?</b>
-        <p>This is <b>only for family friends</b>, meaning people who are <b>not</b> part of the family.</p>
-        <p>If the person is a family member, please ask them to RSVP on their own form instead:
-          <a href="children.html" target="_blank" class="underline font-semibold">Children</a> ·
-          <a href="grandchildren.html" target="_blank" class="underline font-semibold">Grandchildren</a> ·
-          <a href="great-grandchildren.html" target="_blank" class="underline font-semibold">Great-grandchildren</a></p>
-      </div>
-      ${F('friends_count', 'Number of family friends coming with you', { type: 'number', req: false, hint: 'enter 0 if none', attrs: 'min="0" max="50" value="0"' })}
       ${F('arrival_date', 'Expected Arrival Date', { type: 'date', attrs: `min="${today()}"` })}
     </div>
     <div data-panel="MAYBE" class="hidden p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-2">
@@ -81,7 +72,7 @@ export function bindRsvp(form) {
 
 export function readRsvp(form) {
   const v = Object.fromEntries(new FormData(form));
-  if (v.status === 'YES') return { status: 'YES', attendance: { friends_count: v.friends_count || 0, arrival_date: v.arrival_date } };
+  if (v.status === 'YES') return { status: 'YES', attendance: { arrival_date: v.arrival_date } };
   if (v.status === 'MAYBE') return { status: 'MAYBE', followup_date: v.followup_date };
   return { status: 'NO', decline: { reason_code: v.reason_code, reason_text: v.reason_text } };
 }
