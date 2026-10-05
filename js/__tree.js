@@ -7,7 +7,6 @@ renderHeader('tree');
 const app = $('#app');
 const STYLE = {
   ROOT: ['Patriarch', 'bg-slate-900 text-white border-slate-900'],
-  WIFE: ['Wife', 'bg-rose-50 text-rose-900 border-rose-300'],
   PARENT: ['Mother', 'bg-green-50 text-green-900 border-green-400'],
   CHILD: ['Child', 'bg-emerald-50 text-emerald-900 border-emerald-400'],
   GRANDCHILD: ['Grandchild', 'bg-teal-50 text-teal-900 border-teal-400'],
@@ -19,19 +18,15 @@ let root, collapsed = new Set(), hits = new Set(), zoom = 1, isAdmin = false;
 
 function nodeHtml(n) {
   const [label, cls] = STYLE[n.generation];
-  const isWife = n.generation === 'WIFE';
   const dot = n.status && DOT[n.status] ? `<i class="inline-block w-2 h-2 rounded-full ${DOT[n.status][0]} mr-1" title="${DOT[n.status][1]}"></i>` : '';
   const kids = n.children.length;
   const open = !collapsed.has(n.id);
   const toggle = kids ? `<button class="ttoggle" data-toggle="${n.id}" title="${open ? 'Collapse' : 'Expand'}">${open ? '−' : '+ ' + n.total}</button>` : '';
-  // ONE spouse: shown INSIDE the same bubble (Male -> Wife, Female -> Husband). Several wives are shown as branches instead.
-  const only = n.spouses?.length === 1 ? n.spouses[0] : null;
-  const spouse = only ? `<div class="tsp"><div><span class="th">♥</span> <b>${esc(only.name)}</b></div><span class="tg">${n.gender === 'Male' ? 'Wife' : n.gender === 'Female' ? 'Husband' : 'Spouse'}</span>${toggle}</div>` : '';
-  const first = (n.husband || '').split(' ')[0];
-  const title = isWife ? `<span class="th">♥</span> ${esc(n.name)}` : `${dot}${esc(n.name)}`;
-  const sub = isWife ? (n.order ? `Wife ${n.order} of ${esc(first)}` : `Children of ${esc(first)}`) : `${label}${n.generation !== 'ROOT' && n.lineage_side ? ' · ' + n.lineage_side : ''}`;
+  // Spouse lives INSIDE the same bubble (only for people who are married): Male -> Wife, Female -> Husband.
+  // The expand/collapse button goes last, so person + spouse read as one unit.
+  const spouse = n.spouse_name ? `<div class="tsp"><div><span class="th">♥</span> <b>${esc(n.spouse_name)}</b></div><span class="tg">${n.gender === 'Male' ? 'Wife' : n.gender === 'Female' ? 'Husband' : 'Spouse'}</span>${toggle}</div>` : '';
   return `<li><div class="tnode ${cls} ${hits.has(n.id) ? 'hit' : ''}" data-node="${n.id}">
-      <div class="tp"><b>${title}</b><span class="tg">${sub}</span>${only ? '' : toggle}</div>${spouse}</div>
+      <div class="tp"><b>${dot}${esc(n.name)}</b><span class="tg">${label}${n.generation !== 'ROOT' && n.lineage_side ? ' · ' + n.lineage_side : ''}</span>${n.spouse_name ? '' : toggle}</div>${spouse}</div>
     ${kids && open ? `<ul>${n.children.map(nodeHtml).join('')}</ul>` : ''}</li>`;
 }
 
@@ -60,7 +55,7 @@ async function init() {
 
   app.innerHTML = `<div class="space-y-4">
     <div class="flex flex-wrap items-end justify-between gap-3"><div><h1 class="text-2xl font-extrabold">Family tree</h1>
-      <p class="text-xs text-slate-500">${c.PARENT} mothers · ${c.CHILD} children · ${c.GRANDCHILD} grandchildren · ${c.GREAT_GRANDCHILD} great-grandchildren. A spouse appears inside the same card as the person they are married to. A man with several wives shows each wife as her own branch, with her children underneath. Click − / + on a person to collapse or expand their branch.</p></div>
+      <p class="text-xs text-slate-500">${c.PARENT} mothers · ${c.CHILD} children · ${c.GRANDCHILD} grandchildren · ${c.GREAT_GRANDCHILD} great-grandchildren. A spouse appears inside the same card as the person they are married to. Click − / + on a person to collapse or expand their branch.</p></div>
       <div class="flex flex-wrap gap-2 items-center">
         <input id="q" class="inp w-52" placeholder="Find a person…">
         <button id="exp" class="btn bg-white border border-slate-300">Expand all</button><button id="col" class="btn bg-white border border-slate-300">Collapse all</button>

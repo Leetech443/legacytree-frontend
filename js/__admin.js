@@ -56,7 +56,6 @@ async function overview() {
   const sum = (f, k = 'n') => o.by_generation.filter(f).reduce((a, x) => a + x[k], 0);
   const yes = (x) => x.status === 'YES';
   const family = sum(yes), friends = sum(yes, 'friends'), head = family + friends;
-  const hasFriends = friends > 0; // friends are no longer collected; only show these sections if older RSVPs have them
   const hosts = o.friends_hosts, fpct = head ? Math.round((friends / head) * 100) : 0;
   const rows = Object.entries(GEN).map(([g, label]) => {
     const n = (st) => o.by_generation.find((x) => x.generation === g && x.status === st)?.n || 0;
@@ -67,17 +66,16 @@ async function overview() {
   }).join('');
   const maxA = Math.max(1, ...o.arrivals.map((a) => a.family + a.friends));
   const arrivals = o.arrivals.map((a) => { const t = a.family + a.friends || 1; return `<div class="mb-2">
-      <div class="flex justify-between text-xs mb-1"><span>${d10(a.date)}</span><span><b class="text-green-700">${a.family}</b> ${hasFriends ? 'family · <b class="text-violet-700">' + a.friends + '</b> friends' : 'arriving'}</span></div>
+      <div class="flex justify-between text-xs mb-1"><span>${d10(a.date)}</span><span><b class="text-green-700">${a.family}</b> family · <b class="text-violet-700">${a.friends}</b> friends</span></div>
       <div class="h-2 bg-slate-100 rounded"><div class="flex h-2 rounded overflow-hidden" style="width:${((a.family + a.friends) / maxA) * 100}%"><div class="bg-green-500" style="width:${(a.family / t) * 100}%"></div><div class="bg-violet-500 flex-1"></div></div></div></div>`; }).join('') || '<p class="text-xs text-slate-400">No arrivals yet.</p>';
   $('#panel').innerHTML = `<div class="space-y-5">
     ${o.followups_due ? `<button data-go="followups" class="w-full text-left p-3 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-900"><b>${o.followups_due}</b> follow-up${o.followups_due > 1 ? 's are' : ' is'} due today or overdue. Review →</button>` : ''}
-    <div class="grid grid-cols-2 ${hasFriends ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-3">
-      ${stat(hasFriends ? 'Family attending' : 'Attending', family, hasFriends ? 'relatives who said yes' : 'said yes', 'text-green-600')}
-      ${hasFriends ? stat('Family friends', friends, `brought by ${hosts.length} family member${hosts.length === 1 ? '' : 's'}`, 'text-violet-600') + stat('Total expected', head, 'family + friends') : ''}
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      ${stat('Family attending', family, 'relatives who said yes', 'text-green-600')}
+      ${stat('Family friends', friends, `brought by ${hosts.length} family member${hosts.length === 1 ? '' : 's'}`, 'text-violet-600')}
+      ${stat('Total expected', head, 'family + friends')}
       ${stat('Not sure', sum((x) => x.status === 'MAYBE'), 'to follow up', 'text-amber-600')}
-      ${stat('Declined', sum((x) => x.status === 'NO'), '', 'text-red-600')}
-      ${hasFriends ? '' : stat('Responded', sum(() => true), 'people registered')}</div>
-    ${hasFriends ? `
+      ${stat('Declined', sum((x) => x.status === 'NO'), '', 'text-red-600')}</div>
     <div class="card"><div class="flex justify-between items-center mb-2 text-sm"><h3 class="font-bold">Family vs family friends</h3><span class="text-xs text-slate-500">${head ? `${fpct}% of expected people are friends` : 'No attendees yet'}</span></div>
       <div class="flex h-4 rounded-full overflow-hidden bg-slate-100"><div class="bg-green-500" style="width:${head ? 100 - fpct : 0}%"></div><div class="bg-violet-500" style="width:${fpct}%"></div></div>
       <div class="flex gap-4 text-[11px] text-slate-600 mt-2"><span><i class="inline-block w-2 h-2 rounded-sm bg-green-500"></i> Family members (${family})</span><span><i class="inline-block w-2 h-2 rounded-sm bg-violet-500"></i> Family friends (${friends})</span></div></div>
@@ -85,12 +83,11 @@ async function overview() {
       <p class="text-xs text-slate-500">These are family friends, not relatives. Relatives are asked to RSVP on their own form, so they are counted under "Family attending".</p></div>
       <table class="w-full text-xs"><thead class="bg-slate-50 text-slate-500 text-left"><tr><th class="p-3">Family member</th><th>Generation</th><th>Parent</th><th>Arrives</th><th class="pr-3">Friends</th></tr></thead><tbody>
       ${hosts.map((h) => `<tr class="border-t"><td class="p-3 font-semibold">${esc(h.full_name)}</td><td>${GEN[h.generation]}</td><td>${esc(h.parent_name || '—')}</td><td>${d10(h.arrival_date)}</td><td class="pr-3">${friendPill(h.friends)}</td></tr>`).join('') || '<tr><td colspan="5" class="p-6 text-center text-slate-400">Nobody is bringing friends yet.</td></tr>'}</tbody></table></div>
-    ` : ''}
     <div class="grid lg:grid-cols-2 gap-4">
       <div class="card"><h3 class="font-bold text-sm mb-3">Responses by generation</h3>${rows}
         <div class="flex gap-3 text-[11px] text-slate-500 mt-2"><span><i class="inline-block w-2 h-2 bg-green-500 rounded-sm"></i> Yes</span><span><i class="inline-block w-2 h-2 bg-amber-400 rounded-sm"></i> Maybe</span><span><i class="inline-block w-2 h-2 bg-red-400 rounded-sm"></i> No</span></div></div>
       <div class="card"><h3 class="font-bold text-sm mb-3">Arrivals by date</h3>${arrivals}
-        <div class="flex gap-3 text-[11px] text-slate-500 mt-2">${hasFriends ? '<span><i class="inline-block w-2 h-2 bg-green-500 rounded-sm"></i> Family</span><span><i class="inline-block w-2 h-2 bg-violet-500 rounded-sm"></i> Friends</span>' : ''}</div></div>
+        <div class="flex gap-3 text-[11px] text-slate-500 mt-2"><span><i class="inline-block w-2 h-2 bg-green-500 rounded-sm"></i> Family</span><span><i class="inline-block w-2 h-2 bg-violet-500 rounded-sm"></i> Friends</span></div></div>
       <div class="card"><h3 class="font-bold text-sm mb-3">Reasons for declining</h3>${bars(o.declines.map((t) => ({ label: t.label, value: t.n })), 'bg-red-400')}</div>
       <div class="card"><h3 class="font-bold text-sm mb-2">Recent activity</h3>${o.recent.map((r) => `<div class="flex justify-between items-center text-xs py-2 border-t first:border-0">
         <span><b>${esc(r.full_name)}</b> <span class="text-slate-400">· ${GEN[r.generation]}</span></span><span>${badge(r.status)} <span class="text-slate-400 ml-2">${new Date(r.updated_at).toLocaleString()}</span></span></div>`).join('') || '<p class="text-xs text-slate-400">No responses yet.</p>'}</div>
@@ -100,22 +97,20 @@ async function overview() {
 
 /* ---------- guests ---------- */
 const view = { q: '', generation: '', status: '', side: '', friends: '', key: 'created_at', dir: -1 };
-const ALL_COLS = [['full_name', 'Name'], ['generation', 'Generation'], ['parent_name', 'Parent'], ['lineage_side', 'Side'], ['status', 'RSVP'], ['friends_count', 'Friends'], ['arrival_date', 'Arrival']];
+const COLS = [['full_name', 'Name'], ['generation', 'Generation'], ['parent_name', 'Parent'], ['lineage_side', 'Side'], ['status', 'RSVP'], ['friends_count', 'Friends'], ['arrival_date', 'Arrival']];
 const cmp = (x, y) => (x == null && y == null ? 0 : x == null ? -1 : y == null ? 1 : x > y ? 1 : x < y ? -1 : 0);
 async function guests() {
   const all = await adminApi.members();
-  const showFriends = all.some((r) => r.friends_count > 0); // only when older RSVPs carry friends data
-  const COLS = ALL_COLS.filter(([k]) => showFriends || k !== 'friends_count');
   const draw = () => {
     const q = view.q.toLowerCase();
     const rows = all.filter((r) => (!view.generation || r.generation === view.generation) && (!view.status || (r.status || 'NONE') === view.status) && (!view.side || r.lineage_side === view.side)
       && (!view.friends || (view.friends === 'with' ? r.friends_count > 0 : !(r.friends_count > 0)))
-      && (!q || [r.full_name, r.parent_name, r.phone, r.email, r.guardian_name, r.occupation, ...(r.spouses || [])].some((v) => (v || '').toLowerCase().includes(q))))
+      && (!q || [r.full_name, r.parent_name, r.phone, r.email, r.guardian_name, r.occupation, r.spouse_name].some((v) => (v || '').toLowerCase().includes(q))))
       .sort((a, b) => cmp(a[view.key], b[view.key]) * view.dir);
     $('#gtable').innerHTML = `<thead class="bg-slate-50 text-slate-500 text-left"><tr>${COLS.map(([k, l]) => `<th class="p-3 sortable" data-sort="${k}">${l}${view.key === k ? (view.dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('')}</tr></thead>
       <tbody>${rows.map((r) => `<tr class="border-t hover:bg-slate-50 cursor-pointer" data-id="${r.id}"><td class="p-3 font-semibold">${esc(r.full_name)}<div class="font-normal text-slate-400">${esc(r.occupation || r.phone || r.guardian_phone || '')}</div></td>
       <td>${GEN[r.generation]}</td><td>${esc(r.parent_name || '—')}</td><td>${r.lineage_side || '—'}</td><td>${badge(r.status)}</td>
-      ${showFriends ? `<td>${r.friends_count > 0 ? friendPill(r.friends_count) : r.status === 'YES' ? '<span class="text-slate-300">none</span>' : ''}</td>` : ''}<td>${d10(r.arrival_date)}</td></tr>`).join('') || '<tr><td colspan="${COLS.length}" class="p-8 text-center text-slate-400">No matching records</td></tr>'}</tbody>`;
+      <td>${r.friends_count > 0 ? friendPill(r.friends_count) : r.status === 'YES' ? '<span class="text-slate-300">none</span>' : ''}</td><td>${d10(r.arrival_date)}</td></tr>`).join('') || '<tr><td colspan="7" class="p-8 text-center text-slate-400">No matching records</td></tr>'}</tbody>`;
     $('#gcount').textContent = `${rows.length} of ${all.length}`;
     $$('[data-sort]').forEach((th) => (th.onclick = () => { view.dir = view.key === th.dataset.sort ? -view.dir : 1; view.key = th.dataset.sort; draw(); }));
     $$('tr[data-id]').forEach((tr) => (tr.onclick = () => detail(all.find((r) => r.id == tr.dataset.id), () => guests())));
@@ -126,14 +121,14 @@ async function guests() {
     <select id="gg" class="inp w-auto"><option value="">All generations</option>${opt(Object.entries(GEN), view.generation)}</select>
     <select id="gs" class="inp w-auto"><option value="">All RSVPs</option>${opt([['YES', 'Yes'], ['MAYBE', 'Maybe'], ['NO', 'No']], view.status)}</select>
     <select id="gl" class="inp w-auto"><option value="">Both sides</option>${opt([['Maternal', 'Maternal'], ['Paternal', 'Paternal']], view.side)}</select>
-    ${showFriends ? `<select id="gf" class="inp w-auto"><option value="">Friends: any</option>${opt([['with', '🤝 Bringing friends'], ['without', 'Not bringing friends']], view.friends)}</select>` : ''}
+    <select id="gf" class="inp w-auto"><option value="">Friends: any</option>${opt([['with', '🤝 Bringing friends'], ['without', 'Not bringing friends']], view.friends)}</select>
     <span id="gcount" class="text-xs text-slate-500"></span><button id="exp" class="btn ml-auto bg-slate-900 text-white">Export CSV</button></div>
     <div class="card p-0 overflow-x-auto"><table id="gtable" class="w-full text-xs"></table></div>`;
   $('#gq').oninput = (e) => { view.q = e.target.value; draw(); };
   $('#gg').onchange = (e) => { view.generation = e.target.value; draw(); };
   $('#gs').onchange = (e) => { view.status = e.target.value; draw(); };
   $('#gl').onchange = (e) => { view.side = e.target.value; draw(); };
-  if (showFriends) $('#gf').onchange = (e) => { view.friends = e.target.value; draw(); };
+  $('#gf').onchange = (e) => { view.friends = e.target.value; draw(); };
   $('#exp').onclick = guard(adminApi.exportCsv);
   draw();
 }
@@ -142,12 +137,12 @@ function detail(r, refresh) {
   const kv = (k, v) => (v || v === 0 ? `<div><dt class="text-[11px] text-slate-400">${k}</dt><dd class="text-sm font-medium">${esc(v)}</dd></div>` : '');
   const spouseLabel = r.gender === 'Male' ? 'Wife' : 'Husband';
   const rsvp = r.status === 'YES' ? [kv('Arrival date', d10(r.arrival_date)),
-      ...(r.friends_count > 0 ? [`<div><dt class="text-[11px] text-slate-400">Family friends coming with them</dt><dd class="text-sm font-medium">${friendPill(r.friends_count)}</dd></div>`] : [])]
+      `<div><dt class="text-[11px] text-slate-400">Family friends coming with them</dt><dd class="text-sm font-medium">${r.friends_count > 0 ? friendPill(r.friends_count) : 'None'}</dd></div>`]
     : r.status === 'MAYBE' ? [kv('Ask again on', d10(r.followup_date))] : r.status === 'NO' ? [kv('Reason', r.decline_reason), kv('Details', r.decline_text)] : [];
   $('#modal').innerHTML = `<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" id="ov"><div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 space-y-4">
     <div class="flex justify-between items-start"><div><h3 class="text-xl font-bold">${esc(r.full_name)}</h3><p class="text-xs text-slate-500">${GEN[r.generation]} · ${esc(r.gender)}</p></div>${badge(r.status)}</div>
     <dl class="grid grid-cols-2 gap-3">${kv('Parent', r.parent_name)}${kv('Lineage side', r.lineage_side)}${kv('Has children', r.has_children ? 'Yes' : 'No')}${kv('Age', r.age)}${kv('Occupation', r.occupation)}
-      ${kv('Marital status', r.marital_status)}${r.spouses?.length > 1 ? kv('Wives', r.spouses.join(', ')) : r.spouses?.length === 1 ? kv(spouseLabel, r.spouses[0]) : ''}${r.mother_name ? kv(`Mother (a wife of ${r.parent_name})`, r.mother_name) : ''}${kv('Phone', r.phone)}${kv('Email', r.email)}${kv('Guardian', r.guardian_name)}${kv('Guardian phone', r.guardian_phone)}${kv('Registered', new Date(r.created_at).toLocaleString())}</dl>
+      ${kv('Marital status', r.marital_status)}${r.marital_status === 'Married' ? kv(spouseLabel, r.spouse_name) : ''}${kv('Phone', r.phone)}${kv('Email', r.email)}${kv('Guardian', r.guardian_name)}${kv('Guardian phone', r.guardian_phone)}${kv('Registered', new Date(r.created_at).toLocaleString())}</dl>
     <div class="border-t pt-3"><h4 class="text-xs font-bold uppercase text-slate-400 mb-2">RSVP details</h4><dl class="grid grid-cols-2 gap-3">${rsvp.join('') || '<p class="text-xs text-slate-400">No details.</p>'}</dl></div>
     <div class="flex justify-between pt-2"><button id="del" class="text-xs text-red-600 font-semibold">Delete record</button><button id="close" class="btn bg-slate-900 text-white">Close</button></div></div></div>`;
   const close = () => ($('#modal').innerHTML = '');

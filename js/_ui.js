@@ -39,6 +39,15 @@ export function rsvpBlock(options) {
   return `<div class="border-t border-slate-200 pt-5 space-y-4">
     ${S('status', 'Will you attend?', [['YES', 'Yes, I will attend'], ['MAYBE', "I'm not sure yet"], ['NO', "No, I can't make it"]], { ph: 'Select answer' })}
     <div data-panel="YES" class="hidden space-y-4">
+      <div class="p-4 rounded-xl bg-violet-50 border border-violet-200 text-xs text-violet-900 space-y-1.5">
+        <b class="block text-sm">Bringing someone with you?</b>
+        <p>This is <b>only for family friends</b>, meaning people who are <b>not</b> part of the family.</p>
+        <p>If the person is a family member, please ask them to RSVP on their own form instead:
+          <a href="children.html" target="_blank" class="underline font-semibold">Children</a> ·
+          <a href="grandchildren.html" target="_blank" class="underline font-semibold">Grandchildren</a> ·
+          <a href="great-grandchildren.html" target="_blank" class="underline font-semibold">Great-grandchildren</a></p>
+      </div>
+      ${F('friends_count', 'Number of family friends coming with you', { type: 'number', req: false, hint: 'enter 0 if none', attrs: 'min="0" max="50" value="0"' })}
       ${F('arrival_date', 'Expected Arrival Date', { type: 'date', attrs: `min="${today()}"` })}
     </div>
     <div data-panel="MAYBE" class="hidden p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-2">
@@ -72,36 +81,29 @@ export function bindRsvp(form) {
 
 export function readRsvp(form) {
   const v = Object.fromEntries(new FormData(form));
-  if (v.status === 'YES') return { status: 'YES', attendance: { arrival_date: v.arrival_date } };
+  if (v.status === 'YES') return { status: 'YES', attendance: { friends_count: v.friends_count || 0, arrival_date: v.arrival_date } };
   if (v.status === 'MAYBE') return { status: 'MAYBE', followup_date: v.followup_date };
   return { status: 'NO', decline: { reason_code: v.reason_code, reason_text: v.reason_text } };
 }
 
-/* ---- Occupation + marital status + spouse(s) (children & grandchildren) ---- */
+/* ---- Occupation + marital status + spouse (children & grandchildren) ---- */
 export const PROFILE = () => `<div class="grid sm:grid-cols-2 gap-4">
     ${F('occupation', 'Occupation', { attrs: 'maxlength="120" placeholder="e.g. Teacher, Farmer, Student"' })}
     ${S('marital_status', 'Marital status', [['Single', 'Single'], ['Married', 'Married'], ['Divorced', 'Divorced'], ['Widowed', 'Widowed']])}
-    <div id="spouseWrap" class="hidden sm:col-span-2 space-y-3">
-      <div id="wifeCountWrap" class="hidden sm:max-w-xs"><label class="lbl">Number of wives *</label>
-        <input class="inp" type="number" name="wife_count" min="1" max="10" value="1" disabled />
-        <p class="text-[11px] text-slate-500 mt-1">Enter more than 1 if you have several wives, then add each name.</p></div>
-      <div id="spouseList" class="grid sm:grid-cols-2 gap-3"></div></div></div>`;
+    <div id="spouseWrap" class="hidden sm:col-span-2"><label class="lbl" id="spouseLbl">Spouse's name *</label>
+      <input class="inp" name="spouse_name" maxlength="200" disabled /></div></div>`;
 
-/** Married men choose how many wives they have and name each; women enter one husband. */
+/** Shows the spouse field only when Married, labelled Wife / Husband from the person's gender. */
 export function bindProfile(form) {
-  const render = () => {
-    const married = form.marital_status.value === 'Married', g = form.gender.value, man = married && g === 'Male';
+  const sync = () => {
+    const married = form.marital_status.value === 'Married', g = form.gender.value;
+    const who = g === 'Male' ? 'Wife' : g === 'Female' ? 'Husband' : 'Spouse';
+    $('#spouseLbl').textContent = `${who}'s name *`;
+    form.spouse_name.placeholder = `${who}'s full name`;
     $('#spouseWrap').classList.toggle('hidden', !married);
-    $('#wifeCountWrap').classList.toggle('hidden', !man);
-    form.wife_count.disabled = !man;
-    const n = !married ? 0 : man ? Math.min(10, Math.max(1, parseInt(form.wife_count.value, 10) || 1)) : 1;
-    const list = $('#spouseList'), old = $$('input[name=spouse_name]', list).map((i) => i.value);
-    list.innerHTML = Array.from({ length: n }, (_, i) => {
-      const label = g === 'Male' ? (n > 1 ? `Wife ${i + 1}'s name` : "Wife's name") : g === 'Female' ? "Husband's name" : "Spouse's name";
-      return `<div><label class="lbl">${label} *</label><input class="inp" name="spouse_name" maxlength="200" required placeholder="Full name" value="${esc(old[i] || '')}" /></div>`;
-    }).join('');
+    form.spouse_name.disabled = !married; form.spouse_name.required = married;
   };
-  ['marital_status', 'gender'].forEach((n) => form[n].addEventListener('change', render));
-  form.wife_count.addEventListener('input', render);
-  render();
+  form.marital_status.addEventListener('change', sync);
+  form.gender.addEventListener('change', sync);
+  sync();
 }
