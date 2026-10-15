@@ -6,6 +6,10 @@ export function buildTree(rootName, members) {
     const p = n.parent_id != null ? byId.get(String(n.parent_id)) : null;
     (p ? p.children : roots).push(n);
   }
+  // siblings appear oldest first (birth_order), people without an order go last, then by name
+  const byOrder = (a, b) => (a.birth_order ?? 1e9) - (b.birth_order ?? 1e9) || a.name.localeCompare(b.name);
+  byId.forEach((n) => n.children.sort(byOrder));
+  roots.sort(byOrder);
   const root = { id: 'root', name: rootName, generation: 'ROOT', spouses: [], children: roots };
   groupByWives(root);
   // totals count real people only (a "wife" branch is a grouping, not a family member)

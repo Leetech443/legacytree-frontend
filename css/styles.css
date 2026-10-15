@@ -31,3 +31,8 @@ th.sortable{cursor:pointer;user-select:none}
 .tnode .th{color:#e11d48;font-size:.75rem;line-height:1}
 .ttoggle{margin-top:.4rem;font-size:.62rem;font-weight:700;padding:.1rem .45rem;border-radius:999px;background:rgba(15,23,42,.08)}
 .ttoggle:hover{background:rgba(15,23,42,.18)}
+
+/* wife cards share the look of the spouse strip inside a card */
+.tnode.wife{background:#fff;border:1.5px solid #cbd5e1;color:#334155}
+.tnode.wife .tsp{border-top:0;background:transparent}
+.tnode.wife .tsp .th{font-size:.8rem}

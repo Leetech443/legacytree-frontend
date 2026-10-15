@@ -105,3 +105,9 @@ export function bindProfile(form) {
   form.wife_count.addEventListener('input', render);
   render();
 }
+
+/* ---- Birth order in the family: 1st, 2nd, 3rd ... ---- */
+export const ordinal = (n) => { const v = n % 100, s = ['th', 'st', 'nd', 'rd']; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+export const ORDER_OPTIONS = Array.from({ length: 30 }, (_, i) => [String(i + 1), i === 0 ? '1st (oldest)' : ordinal(i + 1)]);
+export const ORDER = (label = 'Your order in the family') => `<div>${S('birth_order', label, ORDER_OPTIONS, { ph: 'Select order' })}
+  <p class="text-[11px] text-slate-500 mt-1">Count among the children of the same mother. 1st = the oldest.</p></div>`;

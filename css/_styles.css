@@ -1,0 +1,33 @@
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif}
+.inp{width:100%;padding:.65rem .75rem;border:1px solid #cbd5e1;border-radius:.6rem;font-size:.85rem;background:#fff}
+.inp:focus{outline:2px solid #16a34a;border-color:#16a34a}
+.lbl{display:block;font-size:.75rem;font-weight:600;color:#334155;margin-bottom:.3rem}
+.opt{font-weight:400;color:#64748b}.err{color:#dc2626;font-size:.72rem;margin-top:.2rem}
+.btn{padding:.65rem 1rem;border-radius:.65rem;font-weight:700;font-size:.8rem}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;padding:1.25rem}
+th.sortable{cursor:pointer;user-select:none}
+
+/* ---- Family tree (pure CSS org chart) ---- */
+.tree-wrap{overflow:auto;padding:1.5rem 1rem 2rem;background:#fff;border:1px solid #e2e8f0;border-radius:1rem}
+.tree ul{display:flex;justify-content:center;padding-top:22px;position:relative;margin:0}
+.tree li{list-style:none;text-align:center;position:relative;padding:22px 8px 0;flex-shrink:0}
+.tree li::before,.tree li::after{content:'';position:absolute;top:0;right:50%;width:50%;height:22px;border-top:2px solid #cbd5e1}
+.tree li::after{right:auto;left:50%;border-left:2px solid #cbd5e1}
+.tree li:only-child::before,.tree li:only-child::after{display:none}
+.tree li:only-child{padding-top:0}
+.tree li:first-child::before,.tree li:last-child::after{border:0 none}
+.tree li:last-child::before{border-right:2px solid #cbd5e1;border-radius:0 8px 0 0}
+.tree li:first-child::after{border-radius:8px 0 0 0}
+.tree ul ul::before{content:'';position:absolute;top:0;left:50%;height:22px;border-left:2px solid #cbd5e1}
+.tree>ul{padding-top:0}.tree>ul>li{padding-top:0}.tree>ul>li::before,.tree>ul>li::after{display:none}
+.tnode{display:inline-block;min-width:124px;max-width:190px;border:1.5px solid;border-radius:1rem;font-size:.72rem;text-align:center;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,.08);transition:box-shadow .15s}
+.tnode:hover{box-shadow:0 4px 14px rgba(15,23,42,.16)}
+.tnode.hit{outline:3px solid #facc15;outline-offset:3px}
+.tnode .tp{padding:.55rem .7rem}
+.tnode .tg{display:block;font-size:.6rem;opacity:.7;margin-top:1px}
+.tnode .tsp{padding:.4rem .7rem .5rem;background:rgba(255,255,255,.8);border-top:1px dashed rgba(15,23,42,.25)}
+.tnode .tsp b{color:#334155}
+.tnode .tsp .tg{color:#be123c;opacity:1;font-weight:600;letter-spacing:.02em}
+.tnode .th{color:#e11d48;font-size:.75rem;line-height:1}
+.ttoggle{margin-top:.4rem;font-size:.62rem;font-weight:700;padding:.1rem .45rem;border-radius:999px;background:rgba(15,23,42,.08)}
+.ttoggle:hover{background:rgba(15,23,42,.18)}
