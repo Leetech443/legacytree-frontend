@@ -1,6 +1,7 @@
 // Family tree page: Mr. Pamba Patelo at the top, then mothers, children, grandchildren, great-grandchildren.
 import { getTree } from './api.js';
-import { $, $$, esc, renderHeader, ordinal } from './ui.js';
+import { $, $$, esc, renderHeader } from './ui.js';
+import { ordinal } from './order.js';
 import { buildTree, walk, search, countByGeneration } from './treeModel.js';
 
 renderHeader('tree');
@@ -37,8 +38,9 @@ function nodeHtml(n) {
   // ONE spouse: shown INSIDE the same bubble (Male -> Wife, Female -> Husband)
   const only = n.spouses?.length === 1 ? n.spouses[0] : null;
   const spouse = only ? `<div class="tsp"><div><span class="th">♥</span> <b>${esc(only.name)}</b></div><span class="tg">${n.gender === 'Male' ? 'Wife' : n.gender === 'Female' ? 'Husband' : 'Spouse'}</span>${toggle}</div>` : '';
-  const sub = `${label}${n.generation !== 'ROOT' && n.lineage_side ? ' · ' + n.lineage_side : ''}${n.birth_order ? ' · ' + ordinal(n.birth_order) : ''}`;
-  return `<li><div class="tnode ${cls} ${hit}" data-node="${n.id}">
+  const sub = `${label}${n.generation !== 'ROOT' && n.lineage_side ? ' · ' + n.lineage_side : ''}`;
+  const badge = n.birth_order ? `<span class="tbadge" title="${ordinal(n.birth_order)} child of the same mother">${ordinal(n.birth_order)}</span>` : '';
+  return `<li><div class="tnode ${cls} ${hit}" data-node="${n.id}">${badge}
       <div class="tp"><b>${dot}${esc(n.name)}</b><span class="tg">${sub}</span>${only ? '' : toggle}</div>${spouse}</div>${branch}</li>`;
 }
 
@@ -93,12 +95,12 @@ async function init() {
 
   app.innerHTML = `<div class="space-y-4">
     <div class="flex flex-wrap items-end justify-between gap-3"><div><h1 class="text-2xl font-extrabold">Family tree</h1>
-      <p class="text-xs text-slate-500">${pl(c.PARENT, 'mother')} · ${pl(c.CHILD, 'child', 'children')} · ${pl(c.GRANDCHILD, 'grandchild', 'grandchildren')} · ${pl(c.GREAT_GRANDCHILD, 'great-grandchild', 'great-grandchildren')}. Brothers and sisters appear oldest first (the order shown on each card). A spouse appears inside the same card as the person they are married to. A man with several wives shows each wife as her own branch, with her children underneath. Click − / + on a person to collapse or expand their branch.</p></div>
+      <p class="text-xs text-slate-500">${pl(c.PARENT, 'mother')} · ${pl(c.CHILD, 'child', 'children')} · ${pl(c.GRANDCHILD, 'grandchild', 'grandchildren')} · ${pl(c.GREAT_GRANDCHILD, 'great-grandchild', 'great-grandchildren')}. Brothers and sisters appear oldest first, as shown by the badge on each card. When a man has several wives, each wife has her own order (1st, 2nd, 3rd…) among her own children. A spouse appears inside the same card as the person they are married to. A man with several wives shows each wife as her own branch, with her children underneath. Click − / + on a person to collapse or expand their branch.</p></div>
       <div class="flex flex-wrap gap-2 items-center">
         <input id="q" class="inp w-52" placeholder="Find a person…">
         <button id="exp" class="btn bg-white border border-slate-300">Expand all</button><button id="col" class="btn bg-white border border-slate-300">Collapse all</button>
         <button id="fit" class="btn bg-white border border-slate-300" title="Fit the whole tree to the screen">Fit</button><button id="zo" class="btn bg-white border border-slate-300" title="Zoom out">A−</button><button id="zi" class="btn bg-white border border-slate-300" title="Zoom in">A+</button></div></div>
-    <div class="flex flex-wrap gap-3 text-[11px] text-slate-600"><span><b class="text-rose-600">♥</b> Spouse (shown inside the card)</span>${Object.entries(STYLE).map(([k, [l, cls]]) => `<span><i class="inline-block w-3 h-3 rounded border ${cls}"></i> ${l}</span>`).join('')}
+    <div class="flex flex-wrap gap-3 text-[11px] text-slate-600"><span><span class="tbadge" style="position:static;display:inline-block">1st</span> Birth order among the same mother's children</span><span><b class="text-rose-600">♥</b> Spouse (shown inside the card)</span>${Object.entries(STYLE).map(([k, [l, cls]]) => `<span><i class="inline-block w-3 h-3 rounded border ${cls}"></i> ${l}</span>`).join('')}
       ${isAdmin ? Object.values(DOT).map(([bg, l]) => `<span><i class="inline-block w-2 h-2 rounded-full ${bg}"></i> ${l}</span>`).join('') : ''}</div>
     <div class="tree-wrap"><div id="treeBox"><div class="tree" id="tree"></div></div></div></div>`;
 
