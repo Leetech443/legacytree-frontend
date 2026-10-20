@@ -27,6 +27,8 @@ async function request(path, { method = 'GET', body, raw } = {}) {
 let optionsCache;
 export const getOptions = () => (optionsCache ??= request('/options'));
 export const getParents = (generation, gender = '') => request(`/parents?for=${generation}&gender=${gender}`);
+/** Positions (1st, 2nd...) already used among ONE mother's children. spouseId is the chosen wife when the father has several. */
+export const getTakenOrders = (parentId, spouseId) => request(`/sibling-orders?parent_id=${parentId}${spouseId ? `&parent_spouse_id=${spouseId}` : ''}`);
 /** Saves a new person + their RSVP in one request. */
 export const registerMember = (payload) => request('/register', { method: 'POST', body: payload });
 /** Lets a person change their answer later using the token returned by registerMember. */
