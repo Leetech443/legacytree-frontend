@@ -181,14 +181,18 @@ async function parents() {
       ${F('full_name', 'Full Name')}
       ${S('birth_order', "Order among the family's mothers", ORDER_OPTIONS, { req: false, ph: 'Not specified (placed last)' })}
       ${F('phone', 'Phone', { type: 'tel', req: false })}${F('email', 'Email', { type: 'email', req: false })}
-      <p id="perr" class="err"></p><button class="btn w-full bg-green-600 text-white">Add parent</button></form>
+      <p id="perr" class="err" role="alert"></p><button type="submit" class="btn w-full bg-green-600 text-white">Add parent</button></form>
     <div class="card lg:col-span-3 p-0 overflow-x-auto"><table class="w-full text-xs"><thead class="bg-slate-50 text-slate-500 text-left"><tr><th class="p-3">Name</th><th>Order</th><th>Contact</th><th>Children registered</th><th></th></tr></thead><tbody>
       ${list.map((p) => `<tr class="border-t"><td class="p-3 font-semibold">${esc(p.full_name)}</td><td>${p.birth_order ? ordinal(p.birth_order) : '—'}</td><td>${esc(p.phone || p.email || '—')}</td><td>${p.children_count}</td>
       <td class="pr-3 text-right"><button class="text-red-600 font-semibold disabled:opacity-30" data-del="${p.id}" data-name="${esc(p.full_name)}" ${p.children_count ? 'disabled title="Has registered children"' : ''}>Delete</button></td></tr>`).join('') || '<tr><td colspan="5" class="p-8 text-center text-slate-400">No parents yet. Add the first one.</td></tr>'}</tbody></table></div></div>`;
   $('#pf').onsubmit = guard(async (e) => {
     e.preventDefault(); const f = e.target; $('#perr').textContent = '';
     if (f.full_name.value.trim().length < 2) return ($('#perr').textContent = 'Please enter the full name.');
-    try { await adminApi.addParent({ full_name: f.full_name.value, birth_order: f.birth_order.value || undefined, phone: f.phone.value, email: f.email.value }); toast('Parent added'); parents(); }
+    try {
+      const birthOrder = f.birth_order.value ? Number(f.birth_order.value) : undefined;
+      await adminApi.addParent({ full_name: f.full_name.value, birth_order: birthOrder, phone: f.phone.value, email: f.email.value });
+      toast('Parent added'); parents();
+    }
     catch (err) { if (err.status === 401) throw err; $('#perr').textContent = err.details ? err.details.map((d) => `${d.field}: ${d.message}`).join(' · ') : err.message; }
   });
   $$('[data-del]').forEach((b) => (b.onclick = guard(async () => {
