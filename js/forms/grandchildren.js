@@ -1,4 +1,4 @@
-import { mountForm } from '../formPage.js';
+import { mountForm } from '../formPage.js?v=20261021-2';
 import { F, S, YN, SIDE, PROFILE } from '../ui.js';
 
 mountForm({
