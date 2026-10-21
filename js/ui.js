@@ -5,6 +5,33 @@ export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&a
 export const today = () => new Date().toISOString().slice(0, 10);
 export const tomorrow = () => new Date(Date.now() + 864e5).toISOString().slice(0, 10);
 
+export const spinner = () => '<span class="spinner" aria-hidden="true"></span>';
+export function setButtonLoading(button, loading, label) {
+  if (!button) return;
+  if (loading) {
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    button.dataset.readyLabel = button.textContent;
+    button.innerHTML = `${spinner()} ${label}`;
+  } else {
+    button.disabled = false;
+    button.removeAttribute('aria-busy');
+    button.textContent = button.dataset.readyLabel || label;
+    delete button.dataset.readyLabel;
+  }
+}
+
+export const pageSkeleton = (kind = 'form') => kind === 'tree'
+  ? `<div class="space-y-4 animate-pulse" aria-label="Loading family tree" role="status">
+      <div class="space-y-2"><div class="skeleton h-8 w-48"></div><div class="skeleton h-4 w-3/4"></div></div>
+      <div class="skeleton h-12 w-full"></div><div class="skeleton h-72 w-full"></div>
+    </div>`
+  : `<div class="card space-y-5 animate-pulse" aria-label="Loading form" role="status">
+      <div class="space-y-3"><div class="skeleton h-6 w-32"></div><div class="skeleton h-8 w-2/3"></div><div class="skeleton h-4 w-4/5"></div></div>
+      <div class="grid sm:grid-cols-2 gap-4">${Array.from({ length: 8 }, () => '<div class="space-y-2"><div class="skeleton h-3 w-1/3"></div><div class="skeleton h-10 w-full"></div></div>').join('')}</div>
+      <div class="skeleton h-28 w-full"></div><div class="skeleton h-11 w-full"></div>
+    </div>`;
+
 export function toast(msg, bad) {
   let t = $('#toast');
   if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'fixed bottom-5 right-5 max-w-sm text-white text-sm p-4 rounded-xl shadow-2xl z-[60]'; document.body.append(t); }

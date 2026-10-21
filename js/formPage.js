@@ -1,7 +1,7 @@
 // Generic page shell used by each form file: renders, loads parents, validates, saves.
 import { getOptions, getParents, getTakenOrders, registerMember } from './api.js';
 import { ORDER_OPTIONS } from './order.js';
-import { $, esc, renderHeader, rsvpBlock, bindRsvp, readRsvp, bindProfile, toast } from './ui.js';
+import { $, esc, renderHeader, rsvpBlock, bindRsvp, readRsvp, bindProfile, toast, pageSkeleton, setButtonLoading } from './ui.js';
 
 const THANKS = {
   YES: 'Your attendance details are saved. We look forward to seeing you.',
@@ -79,6 +79,7 @@ function buildPayload(cfg, form) {
 export async function mountForm(cfg) {
   renderHeader(cfg.key);
   const app = $('#app');
+  app.innerHTML = pageSkeleton();
   let options;
   try { options = await getOptions(); } catch (e) { app.innerHTML = `<p class="err">Could not reach the server: ${esc(e.message)}</p>`; return; }
 
@@ -88,7 +89,7 @@ export async function mountForm(cfg) {
     <form id="f" class="space-y-5" novalidate>${cfg.fields()}${rsvpBlock(options)}
       <label class="flex gap-2 text-xs text-slate-600"><input type="checkbox" name="consent" required class="mt-0.5"> I confirm the details are correct and agree they may be stored to organise this event.</label>
       <p id="formerr" class="err"></p>
-      <button class="btn w-full bg-green-600 hover:bg-green-700 text-white">Submit RSVP</button>
+      <button type="submit" class="btn w-full bg-green-600 hover:bg-green-700 text-white">Submit RSVP</button>
     </form></div>`;
 
   const form = $('#f');
@@ -108,14 +109,26 @@ export async function mountForm(cfg) {
   form.parent_spouse_id?.addEventListener('change', () => syncOrder(cfg, form));
   bindRsvp(form);
   if (form.marital_status) bindProfile(form);
-  const reload = () => loadParents(cfg, form).catch((e) => toast(e.message, true));
+  const reload = async () => {
+    form.parent_id.innerHTML = '<option value="">Loading parents…</option>';
+    form.parent_id.disabled = true;
+    try {
+      await loadParents(cfg, form);
+      form.parent_id.disabled = false;
+    } catch (e) {
+      form.parent_id.innerHTML = '<option value="">Could not load parents</option>';
+      $('#formerr').textContent = `Could not load parents: ${e.message}`;
+      toast(e.message, true);
+    }
+  };
   reload();
   (cfg.watch || []).forEach((n) => form[n].addEventListener('change', reload));
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault(); $('#formerr').textContent = '';
     if (!form.reportValidity()) return;
-    const btn = form.querySelector('button'); btn.disabled = true;
+    const btn = form.querySelector('button[type="submit"]');
+    setButtonLoading(btn, true, 'Submitting…');
     try {
       const payload = buildPayload(cfg, form);
       await registerMember(payload);
@@ -125,7 +138,7 @@ export async function mountForm(cfg) {
         <a href="index.html" class="btn bg-slate-100">Back home</a></div></div>`;
     } catch (err) {
       $('#formerr').textContent = err.details ? err.details.map((d) => `${d.field}: ${d.message}`).join(' · ') : err.message;
-      btn.disabled = false;
+      setButtonLoading(btn, false, 'Submit RSVP');
     }
   });
 }

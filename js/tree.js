@@ -1,6 +1,6 @@
 // Family tree page: Mr. Pamba Patelo at the top, then mothers, children, grandchildren, great-grandchildren.
 import { getTree } from './api.js';
-import { $, $$, esc, renderHeader } from './ui.js';
+import { $, $$, esc, renderHeader, pageSkeleton } from './ui.js';
 import { ordinal } from './order.js';
 import { buildTree, walk, search, countByGeneration } from './treeModel.js';
 
@@ -80,6 +80,7 @@ function collapseAll() { walk(root, (n) => { if (n.id !== 'root' && n.children.l
 
 async function init() {
   let data;
+  app.innerHTML = pageSkeleton('tree');
   try { data = await getTree(); }
   catch (e) {
     app.innerHTML = e.status === 401

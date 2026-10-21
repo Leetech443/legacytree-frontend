@@ -4,6 +4,10 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif}
 .lbl{display:block;font-size:.75rem;font-weight:600;color:#334155;margin-bottom:.3rem}
 .opt{font-weight:400;color:#64748b}.err{color:#dc2626;font-size:.72rem;margin-top:.2rem}
 .btn{padding:.65rem 1rem;border-radius:.65rem;font-weight:700;font-size:.8rem}
+.btn:disabled{cursor:not-allowed;opacity:.7}
+.spinner{display:inline-block;width:.9em;height:.9em;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;vertical-align:-.12em;animation:spin .7s linear infinite}
+.skeleton{background:linear-gradient(90deg,#e2e8f0 25%,#f1f5f9 37%,#e2e8f0 63%);background-size:400% 100%;border-radius:.6rem}
+@keyframes spin{to{transform:rotate(360deg)}}
 .card{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;padding:1.25rem}
 th.sortable{cursor:pointer;user-select:none}
 

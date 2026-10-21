@@ -1,6 +1,6 @@
 // Admin portal: Overview, Guests, Follow-ups, Family mothers (root parents).
 import { adminApi, auth } from './api.js';
-import { $, $$, esc, toast, renderHeader, F, S, ordinal, ORDER_OPTIONS } from './ui.js';
+import { $, $$, esc, toast, renderHeader, F, S, ordinal, ORDER_OPTIONS, setButtonLoading } from './ui.js';
 
 renderHeader('admin');
 const app = $('#app');
@@ -22,11 +22,15 @@ const guard = (fn) => async (...a) => { try { return await fn(...a); } catch (e)
 function login() {
   app.innerHTML = `<form id="lf" class="max-w-sm mx-auto card p-8 space-y-4 mt-10"><h2 class="text-xl font-bold">Admin sign in</h2>
     ${F('username', 'Username', { attrs: 'autocomplete="username"' })}${F('password', 'Password', { type: 'password', attrs: 'autocomplete="current-password"' })}
-    <p id="lerr" class="err"></p><button class="btn w-full bg-slate-900 text-white">Sign in</button></form>`;
+    <p id="lerr" class="err" role="alert"></p><button type="submit" class="btn w-full bg-slate-900 text-white">Sign in</button></form>`;
   $('#lf').onsubmit = async (e) => {
     e.preventDefault();
-    try { const f = e.target; auth.set((await adminApi.login(f.username.value, f.password.value)).token); shell(); }
-    catch (err) { $('#lerr').textContent = err.message; }
+    const f = e.target, btn = f.querySelector('button[type="submit"]');
+    $('#lerr').textContent = '';
+    if (!f.reportValidity()) return;
+    setButtonLoading(btn, true, 'Signing in…');
+    try { auth.set((await adminApi.login(f.username.value, f.password.value)).token); shell(); }
+    catch (err) { $('#lerr').textContent = err.message; setButtonLoading(btn, false, 'Sign in'); }
   };
 }
 
@@ -44,7 +48,7 @@ function shell() {
 const show = guard(async (t) => {
   tab = t;
   $$('[data-tab]').forEach((b) => (b.className = `px-4 py-2 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px ${b.dataset.tab === t ? 'border-green-600 text-green-700' : 'border-transparent text-slate-500'}`));
-  $('#panel').innerHTML = '<p class="text-sm text-slate-400">Loading…</p>';
+  $('#panel').innerHTML = '<div class="space-y-3 animate-pulse" aria-label="Loading admin data" role="status"><div class="skeleton h-24 w-full"></div><div class="skeleton h-48 w-full"></div></div>';
   await { overview, guests, followups, parents }[t]();
 });
 
