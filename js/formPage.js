@@ -65,8 +65,10 @@ async function syncOrder(cfg, form) {
 
 function buildPayload(cfg, form) {
   const v = Object.fromEntries(new FormData(form));
+  const birthOrder = Number(v.birth_order);
+  if (!Number.isInteger(birthOrder) || birthOrder < 1) throw new Error('Please select your birth order.');
   return {
-    member: { generation: cfg.generation, full_name: v.full_name, gender: v.gender, parent_id: v.parent_id, birth_order: v.birth_order || undefined,
+    member: { generation: cfg.generation, full_name: v.full_name, gender: v.gender, parent_id: v.parent_id, birth_order: birthOrder,
       lineage_side: v.lineage_side || undefined, has_children: v.has_children === 'true', email: v.email || '', phone: v.phone,
       age: v.age || undefined, occupation: v.occupation, marital_status: v.marital_status || undefined,
       spouses: v.marital_status === 'Married' ? [...form.querySelectorAll('input[name=spouse_name]')].map((i) => i.value.trim()).filter(Boolean) : undefined,
